@@ -1,11 +1,11 @@
 segment .data
         f_input_format db "%lf", 0
-        f_output_format db "%lf", 10, 0
+        f_output_format: db "%lf ", 0
         impossible_format db "Impossible!", 0
-        print_int_format: db " %ld ", 0
+        print_int_format: db "%ld ", 0
         read_int_format: db "%ld", 0
         arr: db 1000000 dup(0) 
-        asnwers: db 1000000 dup(0) 
+        answers: db 1000000 dup(0) 
 
 segment .bss
         counter resq 1
@@ -15,6 +15,7 @@ segment .bss
         result2 resq 1
         result3 resq 1
         result4 resq 1
+        result5 resq 1
         sum resq 1
 
 segment .text
@@ -225,19 +226,19 @@ asm_main:
                 movsd xmm1, qword [result2]
                 vdivsd xmm2, xmm1, xmm0
 
-                movsd qword[asnwers + 8 * r12], xmm2; answer[n] calculated!
+                movsd qword[answers + 8 * r12], xmm2; answer[n] calculated!
                 mov r13, [n] ;r13 is the counter of the outer loop
                 ;r14 is the counter of the inner loop
                 outer_loop_2:
                         cmp r13, 1
-                        jle end
+                        jle print_answers
                         dec r13
                         mov r14, r13
                         xorps xmm0, xmm0
                         movsd qword[sum], xmm0
                         inner_loop_2:
                                 cmp r14, [n]
-                                je outer_loop_2
+                                je end_of_inner
                                 inc r14
 
                                 ;put arr[i][j] in result1
@@ -248,26 +249,77 @@ asm_main:
                                 mov rax, 1; added to fix bug
                                 movsd xmm1, qword[arr + 8 * rbp]
 
-                                movsd xmm0, qword[asnwers + 8 * r14]
+                                movsd xmm0, qword[answers + 8 * r14]
 
                                 vmulsd xmm2, xmm1, xmm0 
                                 movsd qword[result2], xmm2 ; answers[j] * arr[i][j] is in result2
                                 
                                 movsd xmm0, qword[sum]
-                                movsd xmm1, qword[result2]
-                                vaddss xmm2, xmm1, xmm0
+                                movsd qword[result5], xmm0
+
+                                movsd xmm0, qword [result2]
+                                movsd xmm1, qword [result5]
+                                vaddsd xmm2, xmm0, xmm1
                                 movsd qword[sum], xmm2
+                                
+                                jmp inner_loop_2
+
+
+                        end_of_inner:
+                        mov r12, r13
+                        mov rbx, [n]
+                        inc rbx
+                        call calculate_index
+                        mov rdi, rbp
+                        mov rax, 1; added to fix bug
+                        movsd xmm1, qword[arr + 8 * rbp]
+                        movsd qword[result4], xmm1
+                        movsd xmm0, qword[sum]
+                        movsd qword[result3], xmm0
+
+                        movsd xmm0, qword [result4]
+                        movsd xmm1, qword [result3]
+                        vsubsd xmm2, xmm0, xmm1
+                        movsd qword [result4], xmm2
+
+                        mov r12, r13
+                        mov rbx, r13
+                        call calculate_index
+                        mov rdi, rbp
+                        mov rax, 1; added to fix bug
+                        movsd xmm1, qword[arr + 8 * rbp]
+                        movsd qword[result2], xmm1
+                        
+                        movsd xmm0, qword [result4]
+                        movsd xmm1, qword [result2]
+                        vdivsd xmm2, xmm0, xmm1
+                        movsd qword[answers + 8*r13], xmm2
+
 
                         jmp outer_loop_2
 
         no_answer:
                 mov rdi, impossible_format
                 call printf
-                mov rdi, 10
-                call putchar
+                jmp end
+
+        print_answers:
+                ;r13 is the counter
+                ;result1 is the determinan
+                mov r13,1
+                mov r15, [n]
+                floop:
+                        cmp r13, r15
+                        jg end
+                        movsd xmm0, qword[answers + 8*r13]
+                        mov rdi, f_output_format
+                        call printf
+                        inc r13
+                        jmp floop
 
         end:
-
+                mov rdi, 10
+                call putchar
         ; -------------------------
 
         add rsp, 8
