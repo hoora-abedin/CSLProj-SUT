@@ -4,7 +4,8 @@ segment .data
         impossible_format db "Impossible!", 0
         print_int_format: db " %ld ", 0
         read_int_format: db "%ld", 0
-        arr: db 1000 dup(0) 
+        arr: db 1000000 dup(0) 
+        asnwers: db 1000000 dup(0) 
 
 segment .bss
         counter resq 1
@@ -14,6 +15,7 @@ segment .bss
         result2 resq 1
         result3 resq 1
         result4 resq 1
+        sum resq 1
 
 segment .text
         global print_int
@@ -188,8 +190,7 @@ asm_main:
                 mov r15, [n]
                 nloop:
                         cmp r13, r15
-                        jg end
-
+                        jg calculate_answer
                         mov r12, r13
                         mov rbx, r13
                         call calculate_index
@@ -202,6 +203,62 @@ asm_main:
                         jmp nloop
 
         calculate_answer:
+                mov r12, [n]
+                ;calculate answer[n]
+                ;calculate arr[n][n] and put in result1
+                call calculate_index
+                mov rdi, rbp
+                mov rax, 1; added to fix bug
+                movsd xmm1, qword[arr + 8 * rbp]
+                movsd qword[result1], xmm1
+
+                ;calculate arr[n][n+1] and put in result1
+                mov rbx, [n]
+                inc rbx
+                call calculate_index
+                mov rdi, rbp
+                mov rax, 1; added to fix bug
+                movsd xmm1, qword[arr + 8 * rbp]
+                movsd qword[result2], xmm1
+
+                movsd xmm0, qword [result1]
+                movsd xmm1, qword [result2]
+                vdivsd xmm2, xmm1, xmm0
+
+                movsd qword[asnwers + 8 * r12], xmm2; answer[n] calculated!
+                mov r13, [n] ;r13 is the counter of the outer loop
+                ;r14 is the counter of the inner loop
+                outer_loop_2:
+                        cmp r13, 1
+                        jle end
+                        dec r13
+                        mov r14, r13
+                        xorps xmm0, xmm0
+                        movsd qword[sum], xmm0
+                        inner_loop_2:
+                                cmp r14, [n]
+                                je outer_loop_2
+                                inc r14
+
+                                ;put arr[i][j] in result1
+                                mov r12, r13
+                                mov rbx, r14
+                                call calculate_index
+                                mov rdi, rbp
+                                mov rax, 1; added to fix bug
+                                movsd xmm1, qword[arr + 8 * rbp]
+
+                                movsd xmm0, qword[asnwers + 8 * r14]
+
+                                vmulsd xmm2, xmm1, xmm0 
+                                movsd qword[result2], xmm2 ; answers[j] * arr[i][j] is in result2
+                                
+                                movsd xmm0, qword[sum]
+                                movsd xmm1, qword[result2]
+                                vaddss xmm2, xmm1, xmm0
+                                movsd qword[sum], xmm2
+
+                        jmp outer_loop_2
 
         no_answer:
                 mov rdi, impossible_format
