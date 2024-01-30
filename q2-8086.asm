@@ -1,6 +1,7 @@
 segment .data
         f_input_format db "%lf", 0
         f_output_format db "%lf", 10, 0
+        new_line db "\n", 0
         print_int_format: db " %ld ", 0
         read_int_format: db "%ld", 0
         arr: db 1000 dup(0) 
@@ -103,34 +104,34 @@ asm_main:
                         cmp r14, r15
                         je outer_loop
                         inc r14
-                        ;cmp r14, r13
-                        ;jle inner_loop
+                        cmp r14, r13
+                        jle inner_loop
 
-                        ;put arr[i][j] in xmm1
+                        ;put arr[i][j] in result1
                         mov r12, r14
                         mov rbx, r13
                         call calculate_index
                         mov rdi, rbp
                         mov rax, 1; added to fix bug
-                        mov rdi, f_output_format
                         movsd xmm1, qword[arr + 8 * rbp]
                         movsd qword[result1], xmm1
-                        movsd xmm0, qword[result1]
-                        call printf
 
-                        ;put arr[j][j] in xmm2
+                        ;put arr[j][j] in result2
                         mov r12, r13
                         mov rbx, r13
                         call calculate_index
                         mov rdi, rbp
                         mov rax, 1; added to fix bug
-                        mov rdi, f_output_format
-                        movsd xmm2, qword[arr + 8 * rbp]
-                        movsd xmm0, xmm2
-                        call printf
+                        movsd xmm1, qword[arr + 8 * rbp]
+                        movsd qword[result2], xmm1
 
+                        movsd xmm0, qword [result1]
+                        movsd xmm1, qword [result2]
+                        vdivsd xmm2, xmm0, xmm1
+
+                        movsd qword [result1], xmm2
                         mov rdi, f_output_format
-                        movsd xmm0, qword[result1]
+                        movsd xmm0, qword [result1]; c is now in result1
                         call printf
                         jmp inner_loop
                 jmp outer_loop
