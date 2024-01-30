@@ -1,13 +1,13 @@
 segment .data
         f_input_format db "%lf", 0
         f_output_format db "%lf", 10, 0
-        new_line db "\n", 0
+        impossible_format db "Impossible!", 0
         print_int_format: db " %ld ", 0
         read_int_format: db "%ld", 0
         arr: db 1000 dup(0) 
-        counter: db 0
 
 segment .bss
+        counter resq 1
         n resq 1
         input resq 1
         result1 resq 1
@@ -82,7 +82,7 @@ asm_main:
         mov r13, 0; this is the index of the array
         in_loop_1:
                 cmp r12, 0
-                je end_of_input
+                je convert_arr_to_balamosalasi
 
                 mov rdi, f_input_format
                 mov rsi, input
@@ -94,14 +94,15 @@ asm_main:
                 dec r12
                 jmp in_loop_1
 
-        end_of_input:
+        convert_arr_to_balamosalasi:
         mov r13, 0; this if the j of the loop
         mov r14, 0; this is the i of the loop
         mov r15, [n]
         outer_loop:
                 cmp r13, r15
-                je end
-                inc r13
+                je check_for_no_answer
+
+                        inc r13
                 mov r14, 0
                 inner_loop:
                         cmp r14, r15
@@ -180,25 +181,36 @@ asm_main:
                         jmp inner_loop
                 jmp outer_loop
 
-        
+        check_for_no_answer:
+                ;r13 is the counter
+                ;result1 is the determinan
+                mov r13, 1
+                mov r15, [n]
+                nloop:
+                        cmp r13, r15
+                        jg end
+
+                        mov r12, r13
+                        mov rbx, r13
+                        call calculate_index
+                        mov rdi, rbp
+                        mov rax, 1; added to fix bug
+                        cmp qword[arr + 8 * rbp], 0
+                        je no_answer
+
+                        inc r13
+                        jmp nloop
+
+        calculate_answer:
+
+        no_answer:
+                mov rdi, impossible_format
+                call printf
+                mov rdi, 10
+                call putchar
 
         end:
-        mov rax, [n]
-        mov rbp, rax
-        inc rbp
-        imul rbp
-        mov r12, rax; this is the counter of the input loop
-        mov r13, 0; this is the index of the array
-        in_loop_2:
-                cmp r12, 0
-                je end2
-                mov rdi, f_output_format
-                movsd xmm0, qword [arr + 8 * r13]
-                call printf
-                inc r13
-                dec r12
-                jmp in_loop_2
-        end2:
+
         ; -------------------------
 
         add rsp, 8
