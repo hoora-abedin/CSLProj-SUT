@@ -5,6 +5,7 @@ segment .data
         print_int_format: db " %ld ", 0
         read_int_format: db "%ld", 0
         arr: db 1000 dup(0) 
+        counter: db 0
 
 segment .bss
         n resq 1
@@ -104,8 +105,8 @@ asm_main:
                         cmp r14, r15
                         je outer_loop
                         inc r14
-                        cmp r14, r13
-                        jle inner_loop
+                        ;cmp r14, r13
+                        ;jle inner_loop
 
                         ;put arr[i][j] in result1
                         mov r12, r14
@@ -128,11 +129,21 @@ asm_main:
                         movsd xmm0, qword [result1]
                         movsd xmm1, qword [result2]
                         vdivsd xmm2, xmm0, xmm1
+                        movsd qword [result1], xmm2; c is now in result1
 
-                        movsd qword [result1], xmm2
-                        mov rdi, f_output_format
-                        movsd xmm0, qword [result1]; c is now in result1
-                        call printf
+                        mov r8, 0
+                        mov [counter], r8
+                        k_loop:
+                                mov r8, [counter]
+                                cmp r8, r15
+                                jg inner_loop
+                                mov r8, 1
+                                add [counter], r8
+                                
+                                
+
+                                jmp k_loop
+
                         jmp inner_loop
                 jmp outer_loop
 
