@@ -1,5 +1,5 @@
 
-This is my project of Computer Structure & Language course at Sharif University of Technology. The subject is solving System of n equations with assembly. (IBM & 8086)
+This is my project of Computer Structure & Language course at SUT. The subject is solving System of n equations with assembly. (IBM & 8086)
 
 Here is an example of input and the output:
 
