@@ -84,6 +84,19 @@
 	    lg      %r14,   -8(%r15)
         br      %r14
 
+    calculate_index:
+	    stg     %r14,   -8(%r15)
+        lay     %r15,   -168(%r15)
+        # ---------------------------  
+        # r12 is the first index(i)
+        # rbx is the second index(j)
+        la 2, 10 
+        # ---------------------------  
+	    lay     %r15,   168(%r15)
+	    lg      %r14,   -8(%r15)
+        br      %r14
+
+
     asm_main:
         larl 6, x
         stmg     %r11, %r15, -40(%r15)
@@ -112,7 +125,7 @@
             input_loop:
                 la 7, 0
                 cr 12, 7
-                je End
+                je convert_arr_to_balamosalasi
                 brasl 14, read_double
                 std 0, arr-x(6, 8)
                 la 7, 8
@@ -121,24 +134,45 @@
                 sr 12, 7
                 j input_loop
                 
+            convert_arr_to_balamosalasi:
+            la 7, 0 # this if the counter of the outer loop -> 7 (13)
+            la 8, 0 # this if the counter of the inner loop -> 8 (14)
+            larl 13, n 
+            l 13, 0(13) # this is n -> 13 (15)
+
+            outer_loop:
+                cr 7, 13
+                je End
+                la 3, 1
+                ar 7, 3
+
+                la 8, 0
+                inner_loop:
+                        cr 8, 13
+                        je outer_loop
+                        la 3, 1
+                        ar 8, 3
+                        # cr 8, 7
+                        # jle inner_loop
+
+
+
+                        la 12, 0
+                        k_loop: # this if the counter of the k loop -> 12 (rbx)
+                                la 3, 1
+                                ar 3, 13
+                                cr 12, 3
+                                je inner_loop
+                                la 3, 1
+                                ar 12, 3
+
+
+
+
+                                j k_loop
+                        j inner_loop
+                j outer_loop
             End:
-            larl 13, n2
-            l 12, 0(13)
-            la 8, 0
-            print_loop:
-                la 7, 0
-                cr 12, 7
-                je End2
-                ld 0, arr-x(6, 8)
-                brasl 14, print_double
-                la 2, ' '
-                brasl 14, print_char
-                la 7, 8
-                ar 8, 7
-                la 7, 1
-                sr 12, 7
-                j print_loop
-        End2:
         # ---------------------------  
 
         lay     %r15, 200(%r15)
