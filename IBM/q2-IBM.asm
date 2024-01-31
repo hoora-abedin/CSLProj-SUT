@@ -19,20 +19,18 @@
     print_Impossible:   .asciz "Impossible!"
 
     x:
-    arr:    .zero   8000000
-    answers:    .zero   8000
-    n:      .zero   8
-    n2:     .zero   8
-    result1: .zero   8 
-    result2: .zero   8 
-
-A:
-    .zero 8
+    n:          .zero   8
+    n2:         .zero   8
+    result1:    .zero   8 
+    result2:    .zero   8 
+    sum:        .zero   8
+    ans:        .zero   4000
+    arr:        .zero   8000000
+    A:          .zero   8
 
 .text
 
 .globl asm_main
-
     read_double: # moves double to f0
         stg     %r14,   -8(%r15)
         lay     %r15,   -168(%r15)
@@ -163,114 +161,107 @@ A:
                 j input_loop
                 
             convert_arr_to_balamosalasi:
-            la 7, 0 # this if the counter of the outer loop -> 7 (13)
-            la 10, 0 # this if the counter of the inner loop -> 10 (14)
-            larl 13, n 
-            l 13, 0(13) # this is n -> 13 (15)
+                la 7, 0 # this if the counter of the outer loop -> 7 (13)
+                la 10, 0 # this if the counter of the inner loop -> 10 (14)
+                larl 13, n 
+                l 13, 0(13) # this is n -> 13 (15)
+                outer_loop:
+                    cr 7, 13
+                    je check_for_no_answer
+                    la 3, 1
+                    ar 7, 3
+                    la 10, 0
+                    inner_loop:
+                            cr 10, 13
+                            je outer_loop
+                            la 3, 1
+                            ar 10, 3
+                            cr 10, 7
+                            jle inner_loop
 
-            outer_loop:
-                cr 7, 13
-                je check_for_no_answer
-                la 3, 1
-                ar 7, 3
+                            # get arr[j][j] and put in result 1
+                            la 2, 0
+                            brasl 14, print_char
+                            lr 5, 7
+                            lr 9, 7
+                            brasl 14, calculate_index
+                            lr 9, 2
+                            la 4, 8
+                            mr 8, 4
+                            ld 0, arr-x(6, 9)
+                            larl 8, result1
+                            std 0, 0(8)
 
-                la 10, 0
-                inner_loop:
-                        cr 10, 13
-                        je outer_loop
-                        la 3, 1
-                        ar 10, 3
-                        cr 10, 7
-                        jle inner_loop
+                            # get arr[j][i]
+                            la 2, 0
+                            brasl 14, print_char
+                            lr 9, 10
+                            lr 5, 7
+                            brasl 14, calculate_index
+                            lr 9, 2
+                            la 4, 8
+                            mr 8, 4
+                            ld 0, arr-x(6, 9)
+                            
+                            # calculate c and store in result1
+                            larl 8, result1
+                            ddb 0, 0(8)
+                            larl 8, result1
+                            std 0, 0(8)
+                            la 12, 0
+                            k_loop: # this if the counter of the k loop -> 12 (rbx)
+                                    la 3, 1
+                                    ar 3, 13
+                                    cr 12, 3
+                                    je inner_loop
+                                    la 3, 1
+                                    ar 12, 3
 
-                        # get arr[j][j] and put in result 1
-                        la 2, 0
-                        brasl 14, print_char
-                        lr 5, 7
-                        lr 9, 7
-                        brasl 14, calculate_index
-                        lr 9, 2
-                        la 4, 8
-                        mr 8, 4
-                        ld 0, arr-x(6, 9)
-                        larl 8, result1
-                        std 0, 0(8)
+                                    # get arr[i][k] and calc  c*arr[j][i]
+                                    la 2, 0
+                                    brasl 14, print_char
+                                    lr 9, 7
+                                    lr 5, 12
+                                    brasl 14, calculate_index
+                                    lr 9, 2
+                                    la 4, 8
+                                    mr 8, 4
+                                    ld 0, arr-x(6, 9)
+                                    larl 8, result1
+                                    mdb 0, 0(8)
+                                    larl 8, result2
+                                    std 0, 0(8)
 
-                        # get arr[j][i]
-                        la 2, 0
-                        brasl 14, print_char
-                        lr 9, 10
-                        lr 5, 7
-                        brasl 14, calculate_index
-                        lr 9, 2
-                        la 4, 8
-                        mr 8, 4
-                        ld 0, arr-x(6, 9)
-                        
-                        # calculate c and store in result1
-                        larl 8, result1
-                        ddb 0, 0(8)
-                        larl 8, result1
-                        std 0, 0(8)
+                                    # get arr[j][k]
+                                    la 2, 0
+                                    brasl 14, print_char
+                                    lr 9, 10
+                                    lr 5, 12
+                                    brasl 14, calculate_index
+                                    lr 9, 2
+                                    la 4, 8
+                                    mr 8, 4
+                                    ld 0, arr-x(6, 9)
+                                    larl 8, result2
+                                    sdb 0, 0(8)
+                                    larl 8, result2
+                                    std 0, 0(8)
 
-                        la 12, 0
-                        k_loop: # this if the counter of the k loop -> 12 (rbx)
-                                la 3, 1
-                                ar 3, 13
-                                cr 12, 3
-                                je inner_loop
-                                la 3, 1
-                                ar 12, 3
-
-                                # get arr[i][k] and calc  c*arr[j][i]
-                                la 2, 0
-                                brasl 14, print_char
-                                lr 9, 7
-                                lr 5, 12
-                                brasl 14, calculate_index
-                                lr 9, 2
-                                la 4, 8
-                                mr 8, 4
-                                ld 0, arr-x(6, 9)
-                                
-                                larl 8, result1
-                                mdb 0, 0(8)
-                                larl 8, result2
-                                std 0, 0(8)
-
-                                # get arr[j][k]
-                                la 2, 0
-                                brasl 14, print_char
-                                lr 9, 10
-                                lr 5, 12
-                                brasl 14, calculate_index
-                                lr 9, 2
-                                la 4, 8
-                                mr 8, 4
-                                ld 0, arr-x(6, 9)
-                                
-                                larl 8, result2
-                                sdb 0, 0(8)
-                                larl 8, result2
-                                std 0, 0(8)
-
-                                # store result2 in arr[j][k]
-                                la 2, 0
-                                brasl 14, print_char
-                                lr 9, 10
-                                lr 5, 12
-                                brasl 14, calculate_index
-                                lr 9, 2
-                                la 4, 8
-                                mr 8, 4
-                                larl 8, result2
-                                ld 0, 0(8)
-                                std 0, arr-x(6, 9)
-
-
-                                j k_loop
-                        j inner_loop
-                j outer_loop
+                                    # store result2 in arr[j][k]
+                                    la 2, 0
+                                    brasl 14, print_char
+                                    lr 9, 10
+                                    lr 5, 12
+                                    brasl 14, calculate_index
+                                    lr 9, 2
+                                    la 4, 8
+                                    mr 8, 4
+                                    larl 8, result2
+                                    ld 0, 0(8)
+                                    std 0, arr-x(6, 9)
+                                    j k_loop
+                            j inner_loop
+                    j outer_loop
 
             check_for_no_answer:
                 la 12, 0 # 12 is the counter (13)
@@ -281,7 +272,6 @@ A:
                         je calculate_answer
                         la 3, 1
                         ar 12, 3
-                        
                         la 2, 0
                         brasl 14, print_char
                         lr 9, 12
@@ -291,7 +281,6 @@ A:
                         la 4, 8
                         mr 8, 4
                         ld 0, arr-x(6, 9)
-
                         larl 8, A
                         kdb 0, 0(8)
                         je no_answer
@@ -300,7 +289,7 @@ A:
             calculate_answer:
                 larl 12, n 
                 l 12, 0(12) # this is n -> 12 (15)
-                # calculate answers[n]
+                # calculate ans[n]
                 # calculate A[n][n] and store in result1
                 la 2, 0
                 brasl 14, print_char
@@ -326,22 +315,128 @@ A:
                 la 4, 8
                 mr 8, 4
                 ld 0, arr-x(6, 9)
-
                 larl 8, result1
                 ddb 0, 0(8)
                 lr 9, 12
                 la 3, 8
                 mr 8, 3
-                larl 8, answers-x(6, 9)
-                std 0, 0(8)
+                std 0, ans-x(6, 9)
+                ld 0, ans-x(6, 9)
+                # ans[n] is stored
 
+                larl 13, n 
+                l 13, 0(13) # 13 is the counter of the outer loop
+                # 12 is the counter of the inner loop
+                outer_loop_2:
+                        la 3, 1
+                        cr 13, 3
+                        jle print_answers
+                        la 3, 1
+                        sr 13, 3
+                        lr 12, 13
+                        larl 8, A
+                        ld 0, 0(8)
+                        larl 8, sum
+                        std 0, 0(8)
+                        inner_loop_2:
+                                larl 8, n 
+                                l 8, 0(8)
+                                cr 12, 8
+                                je end_of_inner
+                                la 3, 1
+                                ar 12, 3
+
+                                # get ans[j] and store in result1
+                                lr 9, 12
+                                la 4, 8
+                                mr 8, 4
+                                ld 0, ans-x(6, 9)
+                                larl 8, result1
+                                std 0, 0(8)
+                                
+                                # get arr[i][j]
+                                la 2, 0
+                                brasl 14, print_char
+                                lr 9, 13
+                                lr 5, 12
+                                brasl 14, calculate_index
+                                lr 9, 2
+                                la 4, 8
+                                mr 8, 4
+                                ld 0, arr-x(6, 9)
+                                larl 8, result1
+                                mdb 0, 0(8)
+                                larl 8, result1
+                                std 0, 0(8)
+                                larl 8, sum
+                                adb 0, 0(8)
+                                larl 8, sum
+                                std 0, 0(8)
+                                j inner_loop_2
+                        end_of_inner:
+                        larl 8, n 
+                        l 8, 0(8)
+                        la 3, 1
+                        ar 8, 3
+                        # get arr[i][n+1] and sum and store arr[i][n+1] - sum in result1
+                        la 2, 0
+                        brasl 14, print_char
+                        lr 9, 13
+                        lr 5, 8
+                        brasl 14, calculate_index
+                        lr 9, 2
+                        la 4, 8
+                        mr 8, 4
+                        larl 8, sum
+                        ld 0, arr-x(6, 9)
+                        sdb 0, 0(8)
+                        larl 8, result1
+                        std 0, 0(8)
+
+                        # get arr[i][i] and store result1 / arr[i][i] in ans[i] and store in ans[i]
+                        la 2, 0
+                        brasl 14, print_char
+                        lr 9, 13
+                        lr 5, 13
+                        brasl 14, calculate_index
+                        lr 9, 2
+                        la 4, 8
+                        mr 8, 4
+                        larl 8, sum
+                        ld 0, arr-x(6, 9)
+                        larl 7, result1
+                        ld 0, 0(7)
+                        ddb 0, arr-x(6, 9)
+                        lr 9, 13
+                        la 4, 8
+                        mr 8, 4
+                        std 0, ans-x(6, 9)
+                        j outer_loop_2
+
+            print_answers:
+                la 12, 0 # 12 is the counter
+                larl 13, n
+                l 13, 0(13)
+                floop:
+                        cr 12, 13
+                        je End
+                        la 3, 1
+                        ar 12, 3
+                        lr 9, 12
+                        la 4, 8
+                        mr 8, 4
+                        ld 0, ans-x(6, 9)
+                        brasl 14, print_double
+                        la 2, ' '
+                        brasl 14, print_char
+                        j floop
             
             no_answer:
                 brasl 14, print_impossible
-                la 2, '\n'
-                brasl 14, print_char
             
             End:
+                la 2, '\n'
+                brasl 14, print_char
         # ---------------------------  
 
         lay     %r15, 200(%r15)
