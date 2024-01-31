@@ -88,9 +88,19 @@
 	    stg     %r14,   -8(%r15)
         lay     %r15,   -168(%r15)
         # ---------------------------  
-        # r12 is the first index(i)
-        # rbx is the second index(j)
-        la 2, 10 
+        # r9 is the first index(i)
+        # r5 is the second index(j)
+        larl 8, n
+        l 4, 0(8)
+        la 3, 1
+        ar 4, 3
+        la 3, 1
+        sr 9, 3
+        mr 8, 4
+        ar 9, 5
+        lr 3, 1
+        sr 9, 3
+        lr 2, 9
         # ---------------------------  
 	    lay     %r15,   168(%r15)
 	    lg      %r14,   -8(%r15)
@@ -136,7 +146,7 @@
                 
             convert_arr_to_balamosalasi:
             la 7, 0 # this if the counter of the outer loop -> 7 (13)
-            la 8, 0 # this if the counter of the inner loop -> 8 (14)
+            la 10, 0 # this if the counter of the inner loop -> 10 (14)
             larl 13, n 
             l 13, 0(13) # this is n -> 13 (15)
 
@@ -146,13 +156,13 @@
                 la 3, 1
                 ar 7, 3
 
-                la 8, 0
+                la 10, 0
                 inner_loop:
-                        cr 8, 13
+                        cr 10, 13
                         je outer_loop
                         la 3, 1
-                        ar 8, 3
-                        # cr 8, 7
+                        ar 10, 3
+                        # cr 10, 7
                         # jle inner_loop
 
 
@@ -168,6 +178,12 @@
 
 
 
+                                lr 5, 12
+                                lr 9, 12
+                                brasl 14, calculate_index
+                                brasl 14, print_int
+                                la 2, ' '
+                                brasl 14, print_char
 
                                 j k_loop
                         j inner_loop
