@@ -12,8 +12,10 @@ input:
 
 2 0 2 3
 
+
 output:
 
 1.750000 -0.500000 -0.250000
+
 
 By: Hoora Abedin
