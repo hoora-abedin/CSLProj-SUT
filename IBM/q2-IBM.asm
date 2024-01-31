@@ -22,6 +22,7 @@
     n:      .zero   8
     n2:     .zero   8
     result1: .zero   8 
+    result2: .zero   8 
 
 .text
 
@@ -163,8 +164,8 @@
                         je outer_loop
                         la 3, 1
                         ar 10, 3
-                        # cr 10, 7
-                        # jle inner_loop
+                        cr 10, 7
+                        jle inner_loop
 
                         # get arr[j][j] and put in result 1
                         la 2, 0
@@ -182,8 +183,8 @@
                         # get arr[j][i]
                         la 2, 0
                         brasl 14, print_char
-                        lr 5, 7
                         lr 9, 10
+                        lr 5, 7
                         brasl 14, calculate_index
                         lr 9, 2
                         la 4, 8
@@ -205,14 +206,58 @@
                                 la 3, 1
                                 ar 12, 3
 
-
+                                # get arr[i][k] and calc  c*arr[j][i]
+                                la 2, 0
+                                brasl 14, print_char
+                                lr 9, 7
+                                lr 5, 12
+                                brasl 14, calculate_index
+                                lr 9, 2
+                                la 4, 8
+                                mr 8, 4
+                                ld 0, arr-x(6, 9)
                                 
+                                larl 8, result1
+                                mdb 0, 0(8)
+                                larl 8, result2
+                                std 0, 0(8)
+
+                                # get arr[j][k]
+                                la 2, 0
+                                brasl 14, print_char
+                                lr 9, 10
+                                lr 5, 12
+                                brasl 14, calculate_index
+                                lr 9, 2
+                                la 4, 8
+                                mr 8, 4
+                                ld 0, arr-x(6, 9)
+                                
+                                larl 8, result2
+                                sdb 0, 0(8)
+                                larl 8, result2
+                                std 0, 0(8)
+
+                                # store result2 in arr[j][k]
+                                la 2, 0
+                                brasl 14, print_char
+                                lr 9, 10
+                                lr 5, 12
+                                brasl 14, calculate_index
+                                lr 9, 2
+                                la 4, 8
+                                mr 8, 4
+                                larl 8, result2
+                                ld 0, 0(8)
+                                std 0, arr-x(6, 9)
 
 
                                 j k_loop
                         j inner_loop
                 j outer_loop
+
             End:
+            
         # ---------------------------  
 
         lay     %r15, 200(%r15)
