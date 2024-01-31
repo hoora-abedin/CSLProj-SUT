@@ -20,7 +20,8 @@
     x:
     arr:    .zero   8000000
     n:      .zero   8
-    n2:      .zero   8
+    n2:     .zero   8
+    result1: .zero   8 
 
 .text
 
@@ -165,7 +166,35 @@
                         # cr 10, 7
                         # jle inner_loop
 
+                        # get arr[j][j] and put in result 1
+                        la 2, 0
+                        brasl 14, print_char
+                        lr 5, 7
+                        lr 9, 7
+                        brasl 14, calculate_index
+                        lr 9, 2
+                        la 4, 8
+                        mr 8, 4
+                        ld 0, arr-x(6, 9)
+                        larl 8, result1
+                        std 0, 0(8)
 
+                        # get arr[j][i]
+                        la 2, 0
+                        brasl 14, print_char
+                        lr 5, 7
+                        lr 9, 10
+                        brasl 14, calculate_index
+                        lr 9, 2
+                        la 4, 8
+                        mr 8, 4
+                        ld 0, arr-x(6, 9)
+                        
+                        # calculate c and store in result1
+                        larl 8, result1
+                        ddb 0, 0(8)
+                        larl 8, result1
+                        std 0, 0(8)
 
                         la 12, 0
                         k_loop: # this if the counter of the k loop -> 12 (rbx)
@@ -177,13 +206,8 @@
                                 ar 12, 3
 
 
+                                
 
-                                lr 5, 12
-                                lr 9, 12
-                                brasl 14, calculate_index
-                                brasl 14, print_int
-                                la 2, ' '
-                                brasl 14, print_char
 
                                 j k_loop
                         j inner_loop
