@@ -16,13 +16,18 @@
     read_int_format3:   .asciz "%d"
     read_int_format2:   .asciz "%d"
     read_int_format1:   .asciz "%d"
+    print_Impossible:   .asciz "Impossible!"
 
     x:
     arr:    .zero   8000000
+    answers:    .zero   8000
     n:      .zero   8
     n2:     .zero   8
     result1: .zero   8 
     result2: .zero   8 
+
+A:
+    .zero 8
 
 .text
 
@@ -73,6 +78,17 @@
         lay     %r3,    0(%r15)
         larl    %r2,    read_int_format
         brasl   %r14,   scanf
+        l       %r2,    0(%r15)
+        lay     %r15,   168(%r15)
+        lg      %r14,   -8(%r15)
+        br      %r14
+
+    print_impossible:
+	    stg     %r14,   -8(%r15)
+        lay     %r15,   -168(%r15)
+        lay     %r3,    0(%r15)
+        larl    %r2,    print_Impossible
+        brasl   %r14,   printf
         l       %r2,    0(%r15)
         lay     %r15,   168(%r15)
         lg      %r14,   -8(%r15)
@@ -154,7 +170,7 @@
 
             outer_loop:
                 cr 7, 13
-                je End
+                je check_for_no_answer
                 la 3, 1
                 ar 7, 3
 
@@ -256,8 +272,76 @@
                         j inner_loop
                 j outer_loop
 
-            End:
+            check_for_no_answer:
+                la 12, 0 # 12 is the counter (13)
+                larl 13, n 
+                l 13, 0(13) # this is n -> 13 (15)
+                    nloop:
+                        cr 12, 13
+                        je calculate_answer
+                        la 3, 1
+                        ar 12, 3
+                        
+                        la 2, 0
+                        brasl 14, print_char
+                        lr 9, 12
+                        lr 5, 12
+                        brasl 14, calculate_index
+                        lr 9, 2
+                        la 4, 8
+                        mr 8, 4
+                        ld 0, arr-x(6, 9)
+
+                        larl 8, A
+                        kdb 0, 0(8)
+                        je no_answer
+                        j nloop
+
+            calculate_answer:
+                larl 12, n 
+                l 12, 0(12) # this is n -> 12 (15)
+                # calculate answers[n]
+                # calculate A[n][n] and store in result1
+                la 2, 0
+                brasl 14, print_char
+                lr 9, 12
+                lr 5, 12
+                brasl 14, calculate_index
+                lr 9, 2
+                la 4, 8
+                mr 8, 4
+                ld 0, arr-x(6, 9)
+                larl 8, result1
+                std 0, 0(8)
+
+                # calculate A[n][n+1] and store answer[n] in result1
+                la 2, 0
+                brasl 14, print_char
+                lr 9, 12
+                lr 5, 12
+                la 3, 1
+                ar 5, 1
+                brasl 14, calculate_index
+                lr 9, 2
+                la 4, 8
+                mr 8, 4
+                ld 0, arr-x(6, 9)
+
+                larl 8, result1
+                ddb 0, 0(8)
+                lr 9, 12
+                la 3, 8
+                mr 8, 3
+                larl 8, answers-x(6, 9)
+                std 0, 0(8)
+
             
+            no_answer:
+                brasl 14, print_impossible
+                la 2, '\n'
+                brasl 14, print_char
+            
+            End:
         # ---------------------------  
 
         lay     %r15, 200(%r15)
