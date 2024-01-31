@@ -20,6 +20,7 @@
     x:
     arr:    .zero   8000000
     n:      .zero   8
+    n2:      .zero   8
 
 .text
 
@@ -75,6 +76,14 @@
         lg      %r14,   -8(%r15)
         br      %r14
 
+    print_char:
+	    stg     %r14,   -8(%r15)
+        lay     %r15,   -168(%r15)
+        brasl   %r14,   putchar
+	    lay     %r15,   168(%r15)
+	    lg      %r14,   -8(%r15)
+        br      %r14
+
     asm_main:
         larl 6, x
         stmg     %r11, %r15, -40(%r15)
@@ -82,10 +91,23 @@
 
         # ---------------------------  
         # Write Your Code here   
+            # get size from input and store in memory
             brasl 14, read_int
             larl 13, n
             st 2, 0(13)
-            lr 12, 2
+
+            # calculate n(n+1) and store in n2
+            lr 9, 2
+            lr 13, 2
+            la 7, 1
+            ar 13, 7
+            mr 8, 13
+            larl 13, n2
+            st 9, 0(13)
+
+            # get n(n+1) float array inputs from input and store in memory
+            larl 13, n2
+            l 12, 0(13)
             la 8, 0
             input_loop:
                 la 7, 0
@@ -98,23 +120,24 @@
                 la 7, 1
                 sr 12, 7
                 j input_loop
-        End:
-            larl 13, n
+                
+            End:
+            larl 13, n2
             l 12, 0(13)
             la 8, 0
-            input_loop2:
+            print_loop:
                 la 7, 0
                 cr 12, 7
                 je End2
                 ld 0, arr-x(6, 8)
                 brasl 14, print_double
+                la 2, ' '
+                brasl 14, print_char
                 la 7, 8
                 ar 8, 7
-                brasl 14, print_nl
-
                 la 7, 1
                 sr 12, 7
-                j input_loop2
+                j print_loop
         End2:
         # ---------------------------  
 
